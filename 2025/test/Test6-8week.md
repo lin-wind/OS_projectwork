@@ -144,7 +144,7 @@ gcc matrix_mul_pthread.c -lpthread -o matrix_mul
 ```
 
 - 运行matrix_mul
-  - 注意运行matrix_mul时需要按以下格式传递参数：./matrix_mul <matrix size> <number of threads>
+  - 注意运行matrix_mul时需要按以下格式传递参数：./matrix_mul `<matrix size>` `<number of threads>`
 - 为了验证自己写的代码是否正确，可以先用较小规模的矩阵参与计算：
 
 ```
@@ -169,6 +169,7 @@ Matrix size: 3x3, Number of threads: 1        Execution time:0.000 sec
 
 ![1775117054519](image/Test6-8week/1775117054519.png)
 例如：
+
 ```
  ./matrix_mul 2000 1 
 Matrix size: 2000x2000, Number of threads: 1        Execution time:23.853 sec
@@ -207,6 +208,7 @@ Matrix size: 2000x2000, Number of threads: 8        Execution time:3.757 sec
 ![1775119731661](image/Test6-8week/1775119731661.png)
 
 ### 3.3 协程和管道计算矩阵乘法 （作业）
+
 - 创建size x size个协程，每个协程只负责计算result中一个元素
 
 ![1775119824452](image/Test6-8week/1775119824452.png)
@@ -230,7 +232,15 @@ type ElementResult struct {
 }
 
 func multiplyRowByColumn(a [][]int, b [][]int, row, col int, resultChan chan<- ElementResult) {
-    
+    res := 0
+    for k := 0; k < len(a[0]); k++ {
+        res += a[row][k] * b[k][col]
+    }
+    resultChan <- ElementResult{
+        row,
+        col,
+        res,
+    }
 }
 
 func concurrentMatrixMultiply(a, b [][]int) [][]int {
@@ -309,9 +319,14 @@ go run matrix.go -s 2000 -n 2
 - 补全代码后，按照矩阵大小为2000，线程数分别为1、2、3、4、5、6、7、8，各运行5次，求各线程数对应的平均运行时间
 - 画出实际计算的加速比，拍照上传，与理想加速比曲线做比较
 
+![1775195619896](image/Test6-8week/1775195619896.png)
+
+![1775196544861](image/Test6-8week/1775196544861.png)
+
 ### 3.4 利用协程和管道筛选质数 (作业)
 
 补全以下代码，计算从 2 开始的前 num 个质数：
+
 ```
 package main
 
@@ -326,6 +341,21 @@ func Generator(ch chan<- int) {
     for i := 2; ; i++ {
        ch <- i
     }
+}
+
+func Filter(in <-chan int, prime int) chan int {
+    out := make(chan int)
+    go func() {
+        for {
+            i := <-in
+            if i%prime != 0 {
+                out <- i
+            }
+        }
+    }()
+
+    return out
+    
 }
 
 func main() {
@@ -345,7 +375,8 @@ func main() {
        if *number < 100 {
            fmt.Println(prime)
        }
-       
+
+       ch = Filter(ch, prime)
     }
 
     duration := time.Since(startTime)
@@ -354,6 +385,7 @@ func main() {
 
 ```
 
-
 - 计算前20000个质数，线程数分别为1、2、3、4、5、6、7、8，各运行5次，求各线程数对应的平均运行时间
 - 画出实际计算的加速比，并与理想加速比曲线做比较
+
+![1775205448607](image/Test6-8week/1775205448607.png)
