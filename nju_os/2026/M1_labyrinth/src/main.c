@@ -30,8 +30,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    print_map(&map);
-    printf("The map is loading\n");
+
 
     if(is_connectable(&map) != 0) {
         fprintf(stderr, "Error: The map is not connectable\n");

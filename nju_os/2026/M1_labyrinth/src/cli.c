@@ -58,15 +58,12 @@ int validate_config(GameConfig *config, int argc) {
         }
         return 0;
     } 
-    if(config->version == 0 && (!count_map || !count_player)) {
-        fprintf(stderr, "Error: Both --map and --player are required\n");
+    if(config->version == 0 && (!count_player)) {
+        fprintf(stderr, "Error: --player is required\n");
         return 1;
     }
 
-    if(config->map_name == NULL) {
-        fprintf(stderr, "Error: Invalid map name \n");
-        return 1;
-    }
+
 
     if(config->player_num > 9 || config->player_num < 0) {
         fprintf(stderr, "Error: Invalid player number \n");

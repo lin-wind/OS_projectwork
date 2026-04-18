@@ -1,14 +1,20 @@
 #include <stdio.h>
+#include <string.h>
 
 #include "map.h"
 
 int load_labyrinth(Map *map, const char *filename){
 
-    FILE *fp = fopen(filename, "r");
-    if(fp == NULL) {
-        fprintf(stderr, "Error: Cannot open file %s\n", filename);
-        return 1;
-    }   
+    FILE *fp;
+    if(filename == NULL || strcmp(filename, "-") == 0) {
+        fp = stdin;
+    } else {
+        fp = fopen(filename, "r");
+        if(fp == NULL) {
+            fprintf(stderr, "Error: Cannot open file %s\n", filename);
+            return 1;
+        }   
+    }
 
     map->rows = 0;
     map->cols = 0;
@@ -24,7 +30,7 @@ int load_labyrinth(Map *map, const char *filename){
         while(buffer[col] != '\n' && buffer[col] != '\0') {
             if(col >= MAX_COLS) {
                 fprintf(stderr, "Error: Too many columns in the map\n");
-                fclose(fp);
+                if(fp != stdin) fclose(fp);
                 return 1;
             }
             map->grid[map->rows][col] = buffer[col];
@@ -39,11 +45,13 @@ int load_labyrinth(Map *map, const char *filename){
         map->rows++;
         if(map->rows >= MAX_ROWS) {
             fprintf(stderr, "Error: Too many rows in the map\n");
-            fclose(fp);
+            if(fp != stdin) fclose(fp);
             return 1;
         }
     }
-    fclose(fp);
+    if(fp != stdin) {
+        fclose(fp);
+    }
     return 0;
 }
 
